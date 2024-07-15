@@ -1,5 +1,5 @@
-import { Root } from "../../contracts/root";
-import { DefaultProvider, sha256, bsv, toByteString } from "scrypt-ts";
+import { Root } from "../../lib/contracts/root";
+import { DefaultProvider, bsv } from "scrypt-ts";
 import { NeucronSigner } from "neucron-signer";
 import artifact from "../../../artifacts/root.json"
 
@@ -23,21 +23,22 @@ export const actions = {
         "smart lock deployed : https://whatsonchain.com/tx/" + deployTx.id
       );
 
-      return { success: true, txid: deployTx.id };
+      return { deployed: true, txid: deployTx.id };
     } catch (error:any) {
-      return { success: false, txid: error.message };
+      return { deployed: false, txid: error.message };
     }
   },
 
   unlock: async ({ request }) => {
     // Retrieve data from the form
     const data = await request.formData();
-    const root = Number(data.get("root"));
+    const input1 = BigInt(Number(data.get("input1")));
+    const input2 = BigInt(Number(data.get("input2")));
 
     await instance.connect(signer);
     // Call the unlock method
     try {
-      const { tx: callTx } = await instance.methods.unlock(root);
+      const { tx: callTx } = await instance.methods.unlock(input1, input2);
       console.log(
         "contract unlocked successfully : https://whatsonchain.com/tx/" +
           callTx.id

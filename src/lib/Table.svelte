@@ -1,25 +1,16 @@
 <script>
-	export let names;
-	/**
-	 * @type {null}
-	 */
-	let editingId = null;
-	let editName = "";
-	let editEmail = "";
+	import { createEventDispatcher } from 'svelte';
   
-	/**
-	 * @param {{ id: null; name: string; email: string; }} user
-	 */
-	function startEditing(user) {
-	  editingId = user.id;
-	  editName = user.name;
-	  editEmail = user.email;
+	export let names = [];
+  
+	const dispatch = createEventDispatcher();
+  
+	function editEmail(id) {
+	  dispatch('editEmail', id);
 	}
   
-	function cancelEditing() {
-	  editingId = null;
-	  editName = "";
-	  editEmail = "";
+	function updateEmail(id) {
+	  dispatch('updateEmail', id);
 	}
   </script>
   
@@ -37,47 +28,35 @@
 	<div class="divide-y divide-gray-900/5">
 	  {#each names as user (user.id)}
 		<div class="flex items-center justify-between py-3">
-		  {#if editingId === user.id}
-			<form
-			  method="POST"
-			  action="/profiles?/update"
-			  class="flex items-center space-x-4"
-			>
-			  <input type="hidden" name="id" value={user.id} />
-			  <input
-				type="text"
-				name="name"
-				bind:value={editName}
-				class="input"
-			  />
-			  <input
-				type="email"
-				name="email"
-				bind:value={editEmail}
-				class="input"
-			  />
-			  <button type="submit" class="btn">Save</button>
-			  <button type="button" class="btn" on:click={cancelEditing}
-				>Cancel</button
-			  >
-			</form>
-		  {:else}
-			<div class="flex items-center space-x-4">
-			  <div class="flex">
-				<p class="font-medium pt-1 leading-none">{user.name}</p>
+		  <div class="flex items-center space-x-4">
+			<div class="flex">
+			  <p class="font-medium pt-1 leading-none">{user.name}</p>
+			  {#if user.isEditing}
+				<input type="text" bind:value={user.email} class="font-medium pl-5 text-gray-500 pt-0" />
+			  {:else}
 				<p class="font-medium pl-5 text-gray-500 pt-0">{user.email}</p>
-			  </div>
-			  <button class="btn" on:click={() => startEditing(user)}>Edit</button
-			  >
+			  {/if}
 			</div>
+		  </div>
+		  <div class="flex items-center space-x-2">
+			{#if user.isEditing}
+			  <button on:click={() => updateEmail(user.id)}>
+				<img class="w-4" src="./check.svg" alt="update"/>
+			  </button>
+			{:else}
+			  <button on:click={() => editEmail(user.id)}>
+				<img class="w-4" src="./edit.svg" alt="edit"/>
+			  </button>
+			{/if}
 			<form method="POST" action="/profiles?/delete">
-			  <input type="hidden" name="id" id="id" value={user.id} />
+			  <input type="hidden" name="id" id="id" value={user.id}>
 			  <button type="submit">
-				<img class="w-4 float-right" src="./trash-can.svg" alt="delete" />
+				<img class="w-4" src="./trash-can.svg" alt="delete"/>
 			  </button>
 			</form>
-		  {/if}
+		  </div>
 		</div>
 	  {/each}
 	</div>
   </div>
+  
